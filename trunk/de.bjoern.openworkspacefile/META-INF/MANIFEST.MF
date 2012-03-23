@@ -6,13 +6,12 @@ Bundle-Version: 0.1.3.qualifier
 Bundle-Activator: de.bjoern.openworkspacefile.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.compare,
- org.eclipse.team.svn.ui;bundle-version="0.7.9",
  org.eclipse.team.svn.core;bundle-version="0.7.9",
- org.eclipse.team.ui
+ org.eclipse.team.svn.ui;bundle-version="0.7.9"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.eclipse.compare,
+ org.eclipse.compare.structuremergeviewer,
  org.eclipse.core.internal.resources,
  org.eclipse.core.resources,
  org.eclipse.jdt.ui,
