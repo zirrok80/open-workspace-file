@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Compare
+Bundle-Name: Open Workspace File
 Bundle-SymbolicName: de.bjoern.openworkspacefile;singleton:=true
 Bundle-Version: 0.1.3.qualifier
 Bundle-Activator: de.bjoern.openworkspacefile.Activator
