@@ -16,6 +16,7 @@ Import-Package: org.eclipse.compare,
  org.eclipse.core.resources,
  org.eclipse.jdt.ui,
  org.eclipse.team.internal.ui.synchronize,
+ org.eclipse.team.ui.history,
  org.eclipse.ui.ide,
  org.eclipse.ui.internal.editors.text,
  org.eclipse.ui.part
