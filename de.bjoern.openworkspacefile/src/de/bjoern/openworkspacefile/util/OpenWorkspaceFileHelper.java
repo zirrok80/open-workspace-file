@@ -34,7 +34,7 @@ public class OpenWorkspaceFileHelper {
 	/**
 	 * Path separator.
 	 */
-	private static final String PATH_SEPARATOR = "/";
+	public static final String PATH_SEPARATOR = "/";
 
 	/**
 	 * Private constructor.
