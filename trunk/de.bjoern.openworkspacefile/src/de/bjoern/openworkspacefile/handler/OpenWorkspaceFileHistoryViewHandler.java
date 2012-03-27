@@ -74,7 +74,7 @@ public class OpenWorkspaceFileHistoryViewHandler extends AbstractHandler {
 	 * @since Creation date: 26.03.2012
 	 */
 	private void openSVNChangedPathData(IWorkbenchPage activePage, SVNChangedPathData data) {
-		String filePath = data.resourcePath + "/" + data.resourceName;
+		String filePath = data.resourcePath + OpenWorkspaceFileHelper.PATH_SEPARATOR + data.resourceName;
 		Job job = new SearchAndOpenFileInWorkspaceJob(activePage, filePath);
 		job.schedule();
 	}

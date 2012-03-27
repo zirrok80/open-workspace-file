@@ -48,40 +48,105 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 			return null;
 		}
 
-		Job job = null;
 		final CompareEditorInput compareEditorInput = (CompareEditorInput) activeEditor.getEditorInput();
 
 		Object compareResult = compareEditorInput.getCompareResult();
 		if (compareResult instanceof ICompareInput) {
-			ICompareInput compareInput = (ICompareInput) compareEditorInput.getCompareResult();
-			ITypedElement leftElement = compareInput.getLeft();
-			if (leftElement instanceof IResourceProvider) {
-				IResource resource = ((IResourceProvider) leftElement).getResource();
-				if (resource instanceof IFile) {
-					job = new SearchAndOpenFileInWorkspaceJob(activePage, (IFile) resource);
-				}
-			}
-			else if (leftElement instanceof ResourceElement) {
-				IRepositoryResource repositoryResource = ((ResourceElement) leftElement).getRepositoryResource();
-				String url = repositoryResource.getUrl();
-				job = new SearchAndOpenFileInWorkspaceJob(activePage, url);
-			}
-			else {
-				Activator.getDefault().getLog().log(new Status(IStatus.INFO, Activator.PLUGIN_ID, "left element is not instanceof IResourceProvider"));
-			}
-		}
-		else {
-			Activator.getDefault().getLog().log(new Status(IStatus.INFO, Activator.PLUGIN_ID, "compareResult is not instanceof ICompareInput"));
-		}
-
-		if (job != null) {
-			job.schedule();
-		}
-		else {
-			OpenWorkspaceFileHelper.showAndLogErrorMessage("The resource could not be found in workspace.", null);
+			openCompareInput(activePage, (ICompareInput) compareResult);
 		}
 
 		return null;
+	}
+
+	/**
+	 * Opens the resource of the given {@link ICompareInput}.
+	 * 
+	 * @param activePage
+	 *            The active page.
+	 * @param compareInput
+	 *            Input with resource to open.
+	 * @since Creation date: 27.03.2012
+	 */
+	private void openCompareInput(IWorkbenchPage activePage, final ICompareInput compareInput) {
+		ITypedElement leftElement = compareInput.getLeft();
+		ITypedElement rightElement = compareInput.getRight();
+
+		openTypedElement(activePage, leftElement);
+
+		if (isDifferentElement(leftElement, rightElement)) {
+			openTypedElement(activePage, rightElement);
+		}
+	}
+
+	/**
+	 * Returns <code>true</code> if the given {@link ITypedElement} ends with
+	 * the same file name.
+	 * 
+	 * @param fistElement
+	 *            The first element to check.
+	 * @param secondElement
+	 *            The second element to check.
+	 * @return <code>true</code> if the given {@link ITypedElement} ends with
+	 *         the same file name, otherwise <code>false</code>.
+	 * @since Creation date: 27.03.2012
+	 */
+	private boolean isDifferentElement(ITypedElement fistElement, ITypedElement secondElement) {
+		String leftPath = getTypedElementPath(fistElement);
+		String rightPath = getTypedElementPath(secondElement);
+
+		String[] leftPathString = leftPath.split(OpenWorkspaceFileHelper.PATH_SEPARATOR);
+		String[] rightPathString = rightPath.split(OpenWorkspaceFileHelper.PATH_SEPARATOR);
+
+		String leftFileName = leftPathString[leftPathString.length - 1];
+		String rightFileName = rightPathString[rightPathString.length - 1];
+
+		return !leftFileName.equals(rightFileName);
+	}
+
+	/**
+	 * Returns the path of the given {@link ITypedElement}.
+	 * 
+	 * @param element
+	 *            The {@link ITypedElement} to return path from.
+	 * @return The path of the given {@link ITypedElement}.
+	 * @since Creation date: 27.03.2012
+	 */
+	private String getTypedElementPath(ITypedElement element) {
+		if (element instanceof IResourceProvider) {
+			return ((IResourceProvider) element).getResource().getFullPath().toString();
+		}
+		else if (element instanceof ResourceElement) {
+			return ((ResourceElement) element).getRepositoryResource().getUrl();
+		}
+		return "";
+	}
+
+	/**
+	 * Opens the given {@link ITypedElement}.
+	 * 
+	 * @param activePage
+	 *            The active page.
+	 * @param element
+	 *            The {@link ITypedElement} to open.
+	 * @since Creation date: 27.03.2012
+	 */
+	private void openTypedElement(IWorkbenchPage activePage, ITypedElement element) {
+		if (element instanceof IResourceProvider) {
+			IResource resource = ((IResourceProvider) element).getResource();
+			if (resource instanceof IFile) {
+				Job job = new SearchAndOpenFileInWorkspaceJob(activePage, (IFile) resource);
+				job.schedule();
+			}
+		}
+		else if (element instanceof ResourceElement) {
+			IRepositoryResource repositoryResource = ((ResourceElement) element).getRepositoryResource();
+			String url = repositoryResource.getUrl();
+			Job job = new SearchAndOpenFileInWorkspaceJob(activePage, url);
+			job.schedule();
+		}
+		else {
+			Activator.getDefault().getLog().log(new Status(IStatus.INFO, Activator.PLUGIN_ID, "Resource is not instanceof IResourceProvider"));
+		}
 	}
 
 }
