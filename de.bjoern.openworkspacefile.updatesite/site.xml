@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/de.bjoern.openworkspacefile.feature_0.1.4.201203271248.jar" id="de.bjoern.openworkspacefile.feature" version="0.1.4.201203271248"/>
+   <description name="Open Workspace File Updatesite" url="http://open-workspace-file.googlecode.com/svn/trunk/de.bjoern.openworkspacefile.updatesite/">
+      [Any description from project site]
+   </description>
+   <feature url="features/de.bjoern.openworkspacefile.feature_0.1.4.201203280907.jar" id="de.bjoern.openworkspacefile.feature" version="0.1.4.201203280907">
+      <category name="Open Workspace File"/>
+   </feature>
+   <category-def name="Open Workspace File" label="Open Workspace File">
+      <description>
+         Open Workspace File provides the functionality to open the workspace source file from compare editor an history view.
+      </description>
+   </category-def>
 </site>
