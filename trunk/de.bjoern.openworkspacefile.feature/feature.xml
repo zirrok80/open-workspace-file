@@ -2,7 +2,7 @@
 <feature
       id="de.bjoern.openworkspacefile.feature"
       label="Open Workspace File"
-      version="0.1.4.qualifier">
+      version="0.1.5.qualifier">
 
    <description>
       The Open-Workspace-File feature provides the functionality to open the workspace source file from compare editor an history view.
