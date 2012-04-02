@@ -12,6 +12,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.team.svn.core.resource.IRepositoryResource;
 import org.eclipse.team.svn.ui.compare.ResourceCompareInput.ResourceElement;
 import org.eclipse.ui.IEditorPart;
@@ -48,11 +50,17 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 			return null;
 		}
 
-		final CompareEditorInput compareEditorInput = (CompareEditorInput) activeEditor.getEditorInput();
+		String selectedText = null;
+		ISelection activeSelection = activePage.getSelection();
+		if (activeSelection != null & activeSelection instanceof TextSelection) {
+			TextSelection textSelection = (TextSelection) activeSelection;
+			selectedText = textSelection.getText();
+		}
 
+		final CompareEditorInput compareEditorInput = (CompareEditorInput) activeEditor.getEditorInput();
 		Object compareResult = compareEditorInput.getCompareResult();
 		if (compareResult instanceof ICompareInput) {
-			openCompareInput(activePage, (ICompareInput) compareResult);
+			openCompareInput(activePage, (ICompareInput) compareResult, selectedText);
 		}
 
 		return null;
@@ -65,16 +73,18 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	 *            The active page.
 	 * @param compareInput
 	 *            Input with resource to open.
+	 * @param selectedText
+	 *            The selected text. Can be <code>null</code>.
 	 * @since Creation date: 27.03.2012
 	 */
-	private void openCompareInput(IWorkbenchPage activePage, final ICompareInput compareInput) {
+	private void openCompareInput(IWorkbenchPage activePage, final ICompareInput compareInput, String selectedText) {
 		ITypedElement leftElement = compareInput.getLeft();
 		ITypedElement rightElement = compareInput.getRight();
 
-		openTypedElement(activePage, leftElement);
+		openTypedElement(activePage, leftElement, selectedText);
 
 		if (isDifferentElement(leftElement, rightElement)) {
-			openTypedElement(activePage, rightElement);
+			openTypedElement(activePage, rightElement, selectedText);
 		}
 	}
 
@@ -128,20 +138,22 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	 *            The active page.
 	 * @param element
 	 *            The {@link ITypedElement} to open.
+	 * @param selectedText
+	 *            The selected text. Can be <code>null</code>.
 	 * @since Creation date: 27.03.2012
 	 */
-	private void openTypedElement(IWorkbenchPage activePage, ITypedElement element) {
+	private void openTypedElement(IWorkbenchPage activePage, ITypedElement element, String selectedText) {
 		if (element instanceof IResourceProvider) {
 			IResource resource = ((IResourceProvider) element).getResource();
 			if (resource instanceof IFile) {
-				Job job = new SearchAndOpenFileInWorkspaceJob(activePage, (IFile) resource);
+				Job job = new SearchAndOpenFileInWorkspaceJob(activePage, (IFile) resource, selectedText);
 				job.schedule();
 			}
 		}
 		else if (element instanceof ResourceElement) {
 			IRepositoryResource repositoryResource = ((ResourceElement) element).getRepositoryResource();
 			String url = repositoryResource.getUrl();
-			Job job = new SearchAndOpenFileInWorkspaceJob(activePage, url);
+			Job job = new SearchAndOpenFileInWorkspaceJob(activePage, url, selectedText);
 			job.schedule();
 		}
 		else {

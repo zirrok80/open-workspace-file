@@ -30,6 +30,11 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	private IFile file = null;
 
 	/**
+	 * The String to find and select.
+	 */
+	private String findString = null;
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param activePage
@@ -49,6 +54,22 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	 * 
 	 * @param activePage
 	 *            The active page.
+	 * @param filePath
+	 *            The path to a file.
+	 * @param findString
+	 *            The string to find and select.
+	 * @since Creation date: 02.04.2012
+	 */
+	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, String filePath, String findString) {
+		this(activePage, filePath);
+		this.findString = findString;
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param activePage
+	 *            The active page.
 	 * @param file
 	 *            The file to open.
 	 * @since Creation date: 22.03.2012
@@ -56,6 +77,21 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, IFile file) {
 		this(activePage, "");
 		this.file = file;
+	}
+
+	/**
+	 * 
+	 * @param activePage
+	 *            The active page.
+	 * @param file
+	 *            The file to open.
+	 * @param findString
+	 *            The string to find and select.
+	 * @since Creation date: 02.04.2012
+	 */
+	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, IFile file, String findString) {
+		this(activePage, file);
+		this.findString = findString;
 	}
 
 	@Override
@@ -77,7 +113,7 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	private void openEditorWithFilePath() {
 		IFile workspaceFile = OpenWorkspaceFileHelper.getWorkspaceFile(filePath);
 		if (workspaceFile != null) {
-			OpenWorkspaceFileHelper.openEditor(activePage, workspaceFile);
+			OpenWorkspaceFileHelper.openEditor(activePage, workspaceFile, findString);
 		}
 		else {
 			OpenWorkspaceFileHelper.showAndLogErrorMessage("The resource could not be found in workspace.", null);
