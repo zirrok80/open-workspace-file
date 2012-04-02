@@ -17,7 +17,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
@@ -46,7 +48,8 @@ public class OpenWorkspaceFileHelper {
 	}
 
 	/**
-	 * Opens the the editor with the given id and resource.
+	 * Opens the the editor with the given file and selects the first occuring
+	 * of the given string.
 	 * 
 	 * @param activePage
 	 *            The page in which the editor will be opened.
@@ -55,18 +58,34 @@ public class OpenWorkspaceFileHelper {
 	 * @since Creation date: 14.03.2012
 	 */
 	public static void openEditor(final IWorkbenchPage activePage, final IFile file) {
+		openEditor(activePage, file, null);
+	}
+
+	/**
+	 * Opens the the editor with the given file and selects the first occuring
+	 * of the given string.
+	 * 
+	 * @param activePage
+	 *            The page in which the editor will be opened.
+	 * @param file
+	 *            The file to open.
+	 * @param findString
+	 *            String to find and select in the editor. Can be
+	 *            <code>null</code>.
+	 * @since Creation date: 02.04.2012
+	 */
+	public static void openEditor(final IWorkbenchPage activePage, final IFile file, final String findString) {
 
 		Display.getDefault().syncExec(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					IDE.openEditor(activePage, file);
-					/*
-					 * Open Type command id:
-					 * org.eclipse.jdt.ui.navigate.open.type Open Resource
-					 * command id: org.eclipse.ui.navigate.openResource
-					 */
+					IEditorPart editor = IDE.openEditor(activePage, file);
+					if (findString != null && !findString.isEmpty()) {
+						IFindReplaceTarget target = (IFindReplaceTarget) editor.getAdapter(IFindReplaceTarget.class);
+						target.findAndSelect(0, findString, true, false, false);
+					}
 				}
 
 				catch (PartInitException e) {
