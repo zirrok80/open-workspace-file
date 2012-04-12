@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IFindReplaceTarget;
+import org.eclipse.jface.text.IFindReplaceTargetExtension3;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -83,8 +84,8 @@ public class OpenWorkspaceFileHelper {
 				try {
 					IEditorPart editor = IDE.openEditor(activePage, file);
 					if (findString != null && !findString.isEmpty()) {
-						IFindReplaceTarget target = (IFindReplaceTarget) editor.getAdapter(IFindReplaceTarget.class);
-						target.findAndSelect(0, findString, true, false, false);
+						IFindReplaceTargetExtension3 target = (IFindReplaceTargetExtension3) editor.getAdapter(IFindReplaceTarget.class);
+						findAndSelectText(target, findString);
 					}
 				}
 
@@ -94,6 +95,24 @@ public class OpenWorkspaceFileHelper {
 			}
 		});
 
+	}
+
+	/**
+	 * Finds and selects the given String in the given target.
+	 * 
+	 * @param target
+	 *            The target to search.
+	 * @param findString
+	 *            The text to find.
+	 * @since Creation date: 12.04.2012
+	 */
+	private static void findAndSelectText(IFindReplaceTargetExtension3 target, String findString) {
+		int index = -1;
+		String stringToFind = findString;
+		while (index == -1 && stringToFind.length() > 0) {
+			index = target.findAndSelect(0, stringToFind, true, false, false, false);
+			stringToFind = stringToFind.substring(0, stringToFind.length() - 1);
+		}
 	}
 
 	/**
