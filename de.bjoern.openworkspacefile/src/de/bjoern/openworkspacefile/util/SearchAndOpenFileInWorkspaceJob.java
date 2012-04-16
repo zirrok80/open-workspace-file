@@ -126,7 +126,7 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	 * @since Creation date: 22.03.2012
 	 */
 	private void openEditorWithFile() {
-		OpenWorkspaceFileHelper.openEditor(activePage, file);
+		OpenWorkspaceFileHelper.openEditor(activePage, file, findString);
 	}
 
 }
