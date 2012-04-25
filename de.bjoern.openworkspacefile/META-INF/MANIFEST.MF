@@ -21,3 +21,4 @@ Import-Package: org.eclipse.compare,
  org.eclipse.ui.ide,
  org.eclipse.ui.internal.editors.text,
  org.eclipse.ui.part
+Export-Package: de.bjoern.openworkspacefile.util
