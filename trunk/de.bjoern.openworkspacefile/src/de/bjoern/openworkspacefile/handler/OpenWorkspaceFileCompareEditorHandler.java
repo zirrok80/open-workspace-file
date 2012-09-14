@@ -9,10 +9,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.team.svn.core.resource.IRepositoryResource;
 import org.eclipse.team.svn.ui.compare.ResourceCompareInput.ResourceElement;
@@ -21,7 +19,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.bjoern.openworkspacefile.Activator;
 import de.bjoern.openworkspacefile.util.OpenWorkspaceFileHelper;
 import de.bjoern.openworkspacefile.util.SearchAndOpenFileInWorkspaceJob;
 
@@ -51,23 +48,27 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 		}
 
 		String selectedText = null;
+		int offset = 0;
 		ISelection activeSelection = activePage.getSelection();
-		if (activeSelection != null & activeSelection instanceof TextSelection) {
-			TextSelection textSelection = (TextSelection) activeSelection;
+		if (activeSelection != null & activeSelection instanceof ITextSelection) {
+			ITextSelection textSelection = (ITextSelection) activeSelection;
 			selectedText = textSelection.getText();
+			offset = textSelection.getOffset();
 		}
 
 		final CompareEditorInput compareEditorInput = (CompareEditorInput) activeEditor.getEditorInput();
 		Object compareResult = compareEditorInput.getCompareResult();
 		if (compareResult instanceof ICompareInput) {
-			openCompareInput(activePage, (ICompareInput) compareResult, selectedText);
+			openCompareInput(activePage, (ICompareInput) compareResult, selectedText, offset);
 		}
 
 		return null;
 	}
 
 	/**
-	 * Opens the resource of the given {@link ICompareInput}.
+	 * Opens the resource of the given {@link ICompareInput} and selects the
+	 * given text. If the text is <code>null</code> or empty, the resource will
+	 * open at the given offset.
 	 * 
 	 * @param activePage
 	 *            The active page.
@@ -75,16 +76,18 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	 *            Input with resource to open.
 	 * @param selectedText
 	 *            The selected text. Can be <code>null</code>.
+	 * @param offset
+	 *            The offset of the text selection.
 	 * @since Creation date: 27.03.2012
 	 */
-	private void openCompareInput(IWorkbenchPage activePage, final ICompareInput compareInput, String selectedText) {
+	private void openCompareInput(IWorkbenchPage activePage, final ICompareInput compareInput, String selectedText, int offset) {
 		ITypedElement leftElement = compareInput.getLeft();
 		ITypedElement rightElement = compareInput.getRight();
 
-		openTypedElement(activePage, leftElement, selectedText);
+		openTypedElement(activePage, leftElement, selectedText, offset);
 
 		if (isDifferentElement(leftElement, rightElement)) {
-			openTypedElement(activePage, rightElement, selectedText);
+			openTypedElement(activePage, rightElement, selectedText, offset);
 		}
 	}
 
@@ -132,33 +135,60 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Opens the given {@link ITypedElement}.
+	 * Opens the given {@link ITypedElement} and selects the given text. If the
+	 * text is <code>null</code> or empty, the resource will open at the given
+	 * offset.
 	 * 
 	 * @param activePage
 	 *            The active page.
 	 * @param element
 	 *            The {@link ITypedElement} to open.
 	 * @param selectedText
-	 *            The selected text. Can be <code>null</code>.
+	 *            The text to select. Can be <code>null</code>.
+	 * @param offset
+	 *            The text selection offset.
 	 * @since Creation date: 27.03.2012
 	 */
-	private void openTypedElement(IWorkbenchPage activePage, ITypedElement element, String selectedText) {
+	private void openTypedElement(IWorkbenchPage activePage, ITypedElement element, String selectedText, int offset) {
 		if (element instanceof IResourceProvider) {
 			IResource resource = ((IResourceProvider) element).getResource();
 			if (resource instanceof IFile) {
-				Job job = new SearchAndOpenFileInWorkspaceJob(activePage, (IFile) resource, selectedText);
+				Job job = createJobWithFile(activePage, selectedText, offset, (IFile) resource);
 				job.schedule();
 			}
 		}
 		else if (element instanceof ResourceElement) {
 			IRepositoryResource repositoryResource = ((ResourceElement) element).getRepositoryResource();
 			String url = repositoryResource.getUrl();
-			Job job = new SearchAndOpenFileInWorkspaceJob(activePage, url, selectedText);
+			IFile workspaceFile = OpenWorkspaceFileHelper.getWorkspaceFile(url);
+			Job job = createJobWithFile(activePage, selectedText, offset, workspaceFile);
 			job.schedule();
 		}
-		else {
-			Activator.getDefault().getLog().log(new Status(IStatus.INFO, Activator.PLUGIN_ID, "Resource is not instanceof IResourceProvider"));
+	}
+
+	/**
+	 * Creates the job to open the given file.
+	 * 
+	 * @param activePage
+	 *            The active page.
+	 * @param selectedText
+	 *            The selected text.
+	 * @param offset
+	 *            The offset.
+	 * @param file
+	 *            The file to open.
+	 * @return The created job.
+	 * @since Creation date: 13.09.2012
+	 */
+	private Job createJobWithFile(IWorkbenchPage activePage, String selectedText, int offset, IFile file) {
+		Job job;
+		if (selectedText != null && !selectedText.isEmpty()) {
+			job = new SearchAndOpenFileInWorkspaceJob(activePage, file, selectedText);
 		}
+		else {
+			job = new SearchAndOpenFileInWorkspaceJob(activePage, file, offset);
+		}
+		return job;
 	}
 
 }
