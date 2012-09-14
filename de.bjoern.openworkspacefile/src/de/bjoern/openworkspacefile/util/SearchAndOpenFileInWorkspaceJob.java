@@ -1,5 +1,6 @@
 package de.bjoern.openworkspacefile.util;
 
+import org.apache.commons.lang3.Validate;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -20,50 +21,19 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	private IWorkbenchPage activePage;
 
 	/**
-	 * Path to a file, e.g. a repository URL path.
-	 */
-	private String filePath = null;
-
-	/**
 	 * File to open in editor.
 	 */
-	private IFile file = null;
+	private IFile file;
 
 	/**
 	 * The String to find and select.
 	 */
-	private String findString = null;
+	private String findString;
 
 	/**
-	 * Constructor.
-	 * 
-	 * @param activePage
-	 *            The active page.
-	 * @param filePath
-	 *            The path to a file.
-	 * @since Creation date: 22.03.2012
+	 * The offset to go to, if no text to find is defined.
 	 */
-	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, String filePath) {
-		super("Searching for corresponding file in workspace.");
-		this.activePage = activePage;
-		this.filePath = filePath;
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param activePage
-	 *            The active page.
-	 * @param filePath
-	 *            The path to a file.
-	 * @param findString
-	 *            The string to find and select.
-	 * @since Creation date: 02.04.2012
-	 */
-	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, String filePath, String findString) {
-		this(activePage, filePath);
-		this.findString = findString;
-	}
+	private int offset = 0;
 
 	/**
 	 * Constructor.
@@ -75,11 +45,15 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	 * @since Creation date: 22.03.2012
 	 */
 	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, IFile file) {
-		this(activePage, "");
+		super("Opening workspace file");
+		Validate.notNull(activePage);
+		Validate.notNull(file);
+		this.activePage = activePage;
 		this.file = file;
 	}
 
 	/**
+	 * Constructor.
 	 * 
 	 * @param activePage
 	 *            The active page.
@@ -91,42 +65,38 @@ public class SearchAndOpenFileInWorkspaceJob extends Job {
 	 */
 	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, IFile file, String findString) {
 		this(activePage, file);
+		Validate.notEmpty(findString);
 		this.findString = findString;
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param activePage
+	 *            The active page.
+	 * @param file
+	 *            The file to open.
+	 * @param offset
+	 *            The offset to go to.
+	 * @since Creation date: 13.09.2012
+	 */
+	public SearchAndOpenFileInWorkspaceJob(IWorkbenchPage activePage, IFile file, int offset) {
+		this(activePage, file);
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset must be 0 or greater.");
+		}
+		this.offset = offset;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		if (!filePath.isEmpty()) {
-			openEditorWithFilePath();
-		}
-		else if (file != null) {
-			openEditorWithFile();
-		}
-		return Status.OK_STATUS;
-	}
-
-	/**
-	 * Opens the editor based on the given file path.
-	 * 
-	 * @since Creation date: 22.03.2012
-	 */
-	private void openEditorWithFilePath() {
-		IFile workspaceFile = OpenWorkspaceFileHelper.getWorkspaceFile(filePath);
-		if (workspaceFile != null) {
-			OpenWorkspaceFileHelper.openEditor(activePage, workspaceFile, findString);
+		if (findString != null && !findString.isEmpty()) {
+			OpenWorkspaceFileHelper.openEditorAndFindString(activePage, file, findString);
 		}
 		else {
-			OpenWorkspaceFileHelper.showAndLogErrorMessage("The resource could not be found in workspace.", null);
+			OpenWorkspaceFileHelper.openEditorAndGoToOffset(activePage, file, offset);
 		}
-	}
-
-	/**
-	 * Opens the editor with the given file.
-	 * 
-	 * @since Creation date: 22.03.2012
-	 */
-	private void openEditorWithFile() {
-		OpenWorkspaceFileHelper.openEditor(activePage, file, findString);
+		return Status.OK_STATUS;
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.lang3.Validate;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -24,6 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import de.bjoern.openworkspacefile.Activator;
 
@@ -49,44 +51,29 @@ public class OpenWorkspaceFileHelper {
 	}
 
 	/**
-	 * Opens the the editor with the given file and selects the first occuring
-	 * of the given string.
-	 * 
-	 * @param activePage
-	 *            The page in which the editor will be opened.
-	 * @param file
-	 *            The file to open.
-	 * @since Creation date: 14.03.2012
-	 */
-	public static void openEditor(final IWorkbenchPage activePage, final IFile file) {
-		openEditor(activePage, file, null);
-	}
-
-	/**
-	 * Opens the the editor with the given file and selects the first occuring
-	 * of the given string.
+	 * Opens the editor with the given file and selects the first occurring of
+	 * the given string.
 	 * 
 	 * @param activePage
 	 *            The page in which the editor will be opened.
 	 * @param file
 	 *            The file to open.
 	 * @param findString
-	 *            String to find and select in the editor. Can be
-	 *            <code>null</code>.
+	 *            String to find and select in the editor.
 	 * @since Creation date: 02.04.2012
 	 */
-	public static void openEditor(final IWorkbenchPage activePage, final IFile file, final String findString) {
-
+	public static void openEditorAndFindString(final IWorkbenchPage activePage, final IFile file, final String findString) {
+		Validate.notNull(activePage);
+		Validate.notNull(file);
+		Validate.notEmpty(findString);
 		Display.getDefault().syncExec(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
 					IEditorPart editor = IDE.openEditor(activePage, file);
-					if (findString != null && !findString.isEmpty()) {
-						IFindReplaceTargetExtension3 target = (IFindReplaceTargetExtension3) editor.getAdapter(IFindReplaceTarget.class);
-						findAndSelectText(target, findString);
-					}
+					IFindReplaceTargetExtension3 target = (IFindReplaceTargetExtension3) editor.getAdapter(IFindReplaceTarget.class);
+					findAndSelectText(target, findString);
 				}
 
 				catch (PartInitException e) {
@@ -95,6 +82,42 @@ public class OpenWorkspaceFileHelper {
 			}
 		});
 
+	}
+
+	/**
+	 * Opens the editor with the given file and goes to the given offset.
+	 * 
+	 * @param activePage
+	 *            The page in which the editor will be opened.
+	 * @param file
+	 *            The file to open.
+	 * @param offset
+	 *            The offset to got to.
+	 * @since Creation date: 13.09.2012
+	 */
+	public static void openEditorAndGoToOffset(final IWorkbenchPage activePage, final IFile file, final int offset) {
+		Validate.notNull(activePage);
+		Validate.notNull(file);
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset must be 0 or greater.");
+		}
+		Display.getDefault().syncExec(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					IEditorPart editor = IDE.openEditor(activePage, file);
+					if (editor instanceof ITextEditor) {
+						ITextEditor textEditor = (ITextEditor) editor;
+						textEditor.selectAndReveal(offset, 0);
+					}
+				}
+
+				catch (PartInitException e) {
+					showAndLogErrorMessage("The editor could not be openend.", e);
+				}
+			}
+		});
 	}
 
 	/**
@@ -146,6 +169,7 @@ public class OpenWorkspaceFileHelper {
 	 * @since Creation date: 14.03.2012
 	 */
 	public static IFile getWorkspaceFile(String repositoryURI) {
+		Validate.notEmpty(repositoryURI);
 		String uri = "";
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		String[] split = repositoryURI.split(PATH_SEPARATOR);
@@ -308,15 +332,15 @@ public class OpenWorkspaceFileHelper {
 	 */
 	private static IFile getMostLikelyFile(IFile[] files, String repositoryURI) {
 		Map<IFile, Integer> filePathIdentitiesMap = new HashMap<IFile, Integer>();
-		for (int i = 0; i < files.length; i++) {
-			filePathIdentitiesMap.put(files[i], 0);
+		for (IFile file : files) {
+			filePathIdentitiesMap.put(file, 0);
 			String[] repositorySplit = repositoryURI.split(PATH_SEPARATOR);
-			String[] foundFileSplit = files[i].getFullPath().toString().split(PATH_SEPARATOR);
+			String[] foundFileSplit = file.getFullPath().toString().split(PATH_SEPARATOR);
 			int inspectDeep = (repositorySplit.length > foundFileSplit.length) ? foundFileSplit.length : repositorySplit.length;
-			for (int j = 0; j < inspectDeep; j++) {
-				if (repositorySplit[repositorySplit.length - 1 - j].equals(foundFileSplit[foundFileSplit.length - 1 - j])) {
-					int oldDeep = filePathIdentitiesMap.get(files[i]);
-					filePathIdentitiesMap.put(files[i], ++oldDeep);
+			for (int i = 0; i < inspectDeep; i++) {
+				if (repositorySplit[repositorySplit.length - 1 - i].equals(foundFileSplit[foundFileSplit.length - 1 - i])) {
+					int oldDeep = filePathIdentitiesMap.get(file);
+					filePathIdentitiesMap.put(file, ++oldDeep);
 				}
 				else {
 					break;

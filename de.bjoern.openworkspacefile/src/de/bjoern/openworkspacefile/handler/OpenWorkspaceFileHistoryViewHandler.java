@@ -75,7 +75,8 @@ public class OpenWorkspaceFileHistoryViewHandler extends AbstractHandler {
 	 */
 	private void openSVNChangedPathData(IWorkbenchPage activePage, SVNChangedPathData data) {
 		String filePath = data.resourcePath + OpenWorkspaceFileHelper.PATH_SEPARATOR + data.resourceName;
-		Job job = new SearchAndOpenFileInWorkspaceJob(activePage, filePath);
+		IFile workspaceFile = OpenWorkspaceFileHelper.getWorkspaceFile(filePath);
+		Job job = new SearchAndOpenFileInWorkspaceJob(activePage, workspaceFile);
 		job.schedule();
 	}
 
@@ -94,7 +95,7 @@ public class OpenWorkspaceFileHistoryViewHandler extends AbstractHandler {
 			Object input = historyView.getHistoryPage().getInput();
 			if (input != null && input instanceof IFile) {
 				IFile file = (IFile) input;
-				Job job = new SearchAndOpenFileInWorkspaceJob(activePage, file.getFullPath().toString());
+				Job job = new SearchAndOpenFileInWorkspaceJob(activePage, file);
 				job.schedule();
 			}
 		}

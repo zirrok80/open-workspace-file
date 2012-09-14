@@ -20,5 +20,8 @@ Import-Package: org.eclipse.compare,
  org.eclipse.team.ui.history,
  org.eclipse.ui.ide,
  org.eclipse.ui.internal.editors.text,
- org.eclipse.ui.part
+ org.eclipse.ui.part,
+ org.eclipse.ui.texteditor
 Export-Package: de.bjoern.openworkspacefile.util
+Bundle-ClassPath: .,
+ libs/commons-lang3-3.1.jar
