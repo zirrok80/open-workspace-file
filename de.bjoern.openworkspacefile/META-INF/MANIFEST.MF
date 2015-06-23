@@ -2,12 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Open Workspace File
 Bundle-SymbolicName: de.bjoern.openworkspacefile;singleton:=true
-Bundle-Version: 0.1.6.qualifier
+Bundle-Version: 0.2.0
 Bundle-Activator: de.bjoern.openworkspacefile.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.team.svn.core;bundle-version="0.7.9",
- org.eclipse.team.svn.ui;bundle-version="0.7.9"
+ org.eclipse.team.svn.ui;bundle-version="0.7.9",
+ org.eclipse.team.core;bundle-version="3.6.1",
+ org.eclipse.egit.ui;bundle-version="3.6.1"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.eclipse.compare,
@@ -16,6 +18,7 @@ Import-Package: org.eclipse.compare,
  org.eclipse.core.resources,
  org.eclipse.jdt.ui,
  org.eclipse.jface.text,
+ org.eclipse.team.internal.ui.history,
  org.eclipse.team.internal.ui.synchronize,
  org.eclipse.team.ui.history,
  org.eclipse.ui.ide,

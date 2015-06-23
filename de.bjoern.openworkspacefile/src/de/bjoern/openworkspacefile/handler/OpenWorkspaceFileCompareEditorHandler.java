@@ -1,5 +1,7 @@
 package de.bjoern.openworkspacefile.handler;
 
+import java.net.URI;
+
 import org.eclipse.compare.CompareEditorInput;
 import org.eclipse.compare.IResourceProvider;
 import org.eclipse.compare.ITypedElement;
@@ -9,9 +11,15 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.egit.ui.internal.revision.FileRevisionTypedElement;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.team.core.history.IFileRevision;
 import org.eclipse.team.svn.core.resource.IRepositoryResource;
 import org.eclipse.team.svn.ui.compare.ResourceCompareInput.ResourceElement;
 import org.eclipse.ui.IEditorPart;
@@ -24,7 +32,7 @@ import de.bjoern.openworkspacefile.util.SearchAndOpenFileInWorkspaceJob;
 
 /**
  * Handler to open the source of the compare editor.
- * 
+ *
  * @author funhoff
  */
 public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
@@ -69,7 +77,7 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	 * Opens the resource of the given {@link ICompareInput} and selects the
 	 * given text. If the text is <code>null</code> or empty, the resource will
 	 * open at the given offset.
-	 * 
+	 *
 	 * @param activePage
 	 *            The active page.
 	 * @param compareInput
@@ -94,7 +102,7 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	/**
 	 * Returns <code>true</code> if the given {@link ITypedElement} ends with
 	 * the same file name.
-	 * 
+	 *
 	 * @param fistElement
 	 *            The first element to check.
 	 * @param secondElement
@@ -118,7 +126,7 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 
 	/**
 	 * Returns the path of the given {@link ITypedElement}.
-	 * 
+	 *
 	 * @param element
 	 *            The {@link ITypedElement} to return path from.
 	 * @return The path of the given {@link ITypedElement}.
@@ -138,7 +146,7 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	 * Opens the given {@link ITypedElement} and selects the given text. If the
 	 * text is <code>null</code> or empty, the resource will open at the given
 	 * offset.
-	 * 
+	 *
 	 * @param activePage
 	 *            The active page.
 	 * @param element
@@ -149,6 +157,7 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 	 *            The text selection offset.
 	 * @since Creation date: 27.03.2012
 	 */
+	@SuppressWarnings("restriction")
 	private void openTypedElement(IWorkbenchPage activePage, ITypedElement element, String selectedText, int offset) {
 		if (element instanceof IResourceProvider) {
 			IResource resource = ((IResourceProvider) element).getResource();
@@ -164,11 +173,27 @@ public class OpenWorkspaceFileCompareEditorHandler extends AbstractHandler {
 			Job job = createJobWithFile(activePage, selectedText, offset, workspaceFile);
 			job.schedule();
 		}
+		else if (element instanceof FileRevisionTypedElement) {
+			FileRevisionTypedElement fileRevisionTypedElement = (FileRevisionTypedElement) element;
+			IFileRevision fileRevision = fileRevisionTypedElement.getFileRevision();
+			URI uri = fileRevision.getURI();
+			IFile workspaceFile = getIFileFromURI(uri);
+			Job job = createJobWithFile(activePage, selectedText, offset, workspaceFile);
+			job.schedule();
+		}
+	}
+
+	private IFile getIFileFromURI(URI uri) {
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		URI rootUri = root.getLocationURI();
+		uri = rootUri.relativize(uri);
+		IPath path = new Path(uri.getPath());
+		return root.getFile(path);
 	}
 
 	/**
 	 * Creates the job to open the given file.
-	 * 
+	 *
 	 * @param activePage
 	 *            The active page.
 	 * @param selectedText
