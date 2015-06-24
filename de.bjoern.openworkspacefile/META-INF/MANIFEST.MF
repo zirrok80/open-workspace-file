@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Open Workspace File
 Bundle-SymbolicName: de.bjoern.openworkspacefile;singleton:=true
-Bundle-Version: 0.2.0
+Bundle-Version: 0.2.1
 Bundle-Activator: de.bjoern.openworkspacefile.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

@@ -66,6 +66,7 @@ public class OpenWorkspaceFileHelper {
 		Validate.notNull(activePage);
 		Validate.notNull(file);
 		Validate.notEmpty(findString);
+		Validate.isTrue(file.exists());
 		Display.getDefault().syncExec(new Runnable() {
 
 			@Override

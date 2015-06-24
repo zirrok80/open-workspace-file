@@ -3,7 +3,7 @@
    <description name="Open Workspace File Updatesite">
       [Any description from project site]
    </description>
-   <feature url="features/de.bjoern.openworkspacefile.feature_0.2.0.jar" id="de.bjoern.openworkspacefile.feature" version="0.2.0">
+   <feature url="features/de.bjoern.openworkspacefile.feature_0.2.1.jar" id="de.bjoern.openworkspacefile.feature" version="0.2.1">
       <category name="Open Workspace File"/>
    </feature>
    <category-def name="Open Workspace File" label="Open Workspace File">
